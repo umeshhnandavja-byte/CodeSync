@@ -22,11 +22,11 @@ export function SettingsView() {
   const [saved, setSaved] = useState(false)
 
   // Profile fields state
-  const [displayName, setDisplayName] = useState("Umesh Nanda")
-  const [email, setEmail] = useState("umesh@codesync.dev")
+  const [displayName, setDisplayName] = useState("Guest")
+  const [email, setEmail] = useState("Guest@codesync.dev")
 
   const [handles, setHandles] = useState({
-    LeetCode: "Umeshh_Nanda",
+    LeetCode: "tourist",
     Codeforces: "tourist",
   })
   

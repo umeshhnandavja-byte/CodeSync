@@ -13,6 +13,9 @@ const USER_STATS_QUERY = `
           count
         }
       }
+      userCalendar {
+        submissionCalendar
+      }
     }
   }
 `
@@ -32,6 +35,9 @@ type LeetCodeGraphQLResponse = {
       submitStatsGlobal: {
         acSubmissionNum: DifficultyCount[]
       } | null
+      userCalendar: {
+        submissionCalendar: string // LeetCode returns this as a JSON string of timestamp: count
+      } | null
     } | null
   }
   errors?: { message: string }[]
@@ -46,6 +52,7 @@ export type LeetCodeUserStats = {
     hard: number
   }
   globalRanking: number | null
+  streak: number
 }
 
 export class LeetCodeApiError extends Error {
@@ -60,6 +67,58 @@ export class LeetCodeApiError extends Error {
 
 function countByDifficulty(entries: DifficultyCount[] | undefined, difficulty: string) {
   return entries?.find((entry) => entry.difficulty.toLowerCase() === difficulty)?.count ?? 0
+}
+
+// Compute the active streak from LeetCode's submission calendar timestamps
+function calculateStreak(submissionCalendarStr: string | undefined): number {
+  if (!submissionCalendarStr) return 0;
+
+  let submissionCalendar: Record<string, number>;
+  try {
+    submissionCalendar = JSON.parse(submissionCalendarStr);
+  } catch {
+    return 0;
+  }
+
+  const timestamps = Object.keys(submissionCalendar)
+    .map(Number)
+    .sort((a, b) => b - a); // Sort descending (newest first)
+
+  if (timestamps.length === 0) return 0;
+
+  let streak = 0;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const latestSubmission = new Date(timestamps[0] * 1000);
+  latestSubmission.setHours(0, 0, 0, 0);
+
+  const diffTime = Math.abs(now.getTime() - latestSubmission.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays > 1) {
+    return 0; // Streak broken if no submission today or yesterday
+  }
+
+  let expectedDay = latestSubmission;
+
+  for (const ts of timestamps) {
+    const subDate = new Date(ts * 1000);
+    subDate.setHours(0, 0, 0, 0);
+
+    const timeDiff = (expectedDay.getTime() - subDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    if (timeDiff === 0) {
+      if (streak === 0) streak = 1;
+    } else if (timeDiff === 1) {
+      streak++;
+      expectedDay = subDate;
+    } else if (timeDiff > 1) {
+      break;
+    }
+  }
+
+  return streak;
 }
 
 export async function getLeetCodeUserStats(username: string): Promise<LeetCodeUserStats> {
@@ -116,6 +175,8 @@ export async function getLeetCodeUserStats(username: string): Promise<LeetCodeUs
   }
 
   const stats = user.submitStatsGlobal?.acSubmissionNum
+  const calendarString = user.userCalendar?.submissionCalendar
+  const streak = calculateStreak(calendarString)
 
   return {
     username: user.username,
@@ -126,5 +187,6 @@ export async function getLeetCodeUserStats(username: string): Promise<LeetCodeUs
       hard: countByDifficulty(stats, "hard"),
     },
     globalRanking: user.profile?.ranking ?? null,
+    streak,
   }
 }

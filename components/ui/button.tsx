@@ -1,6 +1,5 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
-
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
@@ -40,12 +39,21 @@ const buttonVariants = cva(
   },
 )
 
+export interface ButtonProps
+  extends ButtonPrimitive.Props,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
 function Button({
   className,
   variant = 'default',
   size = 'default',
+  asChild,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonProps) {
+  // If asChild is used with Base UI, we can safely extract it 
+  // so it doesn't get passed down to the underlying DOM node.
   return (
     <ButtonPrimitive
       data-slot="button"

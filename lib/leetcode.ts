@@ -17,6 +17,11 @@ const USER_STATS_QUERY = `
         submissionCalendar
       }
     }
+    userContestRanking(username: $username) {
+      rating
+      globalRanking
+      attendedContestsCount
+    }
   }
 `
 
@@ -36,8 +41,13 @@ type LeetCodeGraphQLResponse = {
         acSubmissionNum: DifficultyCount[]
       } | null
       userCalendar: {
-        submissionCalendar: string // LeetCode returns this as a JSON string of timestamp: count
+        submissionCalendar: string
       } | null
+    } | null
+    userContestRanking: {
+      rating: number | null
+      globalRanking: number | null
+      attendedContestsCount: number | null
     } | null
   }
   errors?: { message: string }[]
@@ -52,6 +62,8 @@ export type LeetCodeUserStats = {
     hard: number
   }
   globalRanking: number | null
+  rating: number | null
+  attendedContests: number | null
   streak: number
 }
 
@@ -69,56 +81,55 @@ function countByDifficulty(entries: DifficultyCount[] | undefined, difficulty: s
   return entries?.find((entry) => entry.difficulty.toLowerCase() === difficulty)?.count ?? 0
 }
 
-// Compute the active streak from LeetCode's submission calendar timestamps
 function calculateStreak(submissionCalendarStr: string | undefined): number {
-  if (!submissionCalendarStr) return 0;
+  if (!submissionCalendarStr) return 0
 
-  let submissionCalendar: Record<string, number>;
+  let submissionCalendar: Record<string, number>
   try {
-    submissionCalendar = JSON.parse(submissionCalendarStr);
+    submissionCalendar = JSON.parse(submissionCalendarStr)
   } catch {
-    return 0;
+    return 0
   }
 
   const timestamps = Object.keys(submissionCalendar)
     .map(Number)
-    .sort((a, b) => b - a); // Sort descending (newest first)
+    .sort((a, b) => b - a)
 
-  if (timestamps.length === 0) return 0;
+  if (timestamps.length === 0) return 0
 
-  let streak = 0;
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  let streak = 0
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
 
-  const latestSubmission = new Date(timestamps[0] * 1000);
-  latestSubmission.setHours(0, 0, 0, 0);
+  const latestSubmission = new Date(timestamps[0] * 1000)
+  latestSubmission.setHours(0, 0, 0, 0)
 
-  const diffTime = Math.abs(now.getTime() - latestSubmission.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffTime = Math.abs(now.getTime() - latestSubmission.getTime())
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
   if (diffDays > 1) {
-    return 0; // Streak broken if no submission today or yesterday
+    return 0
   }
 
-  let expectedDay = latestSubmission;
+  let expectedDay = latestSubmission
 
   for (const ts of timestamps) {
-    const subDate = new Date(ts * 1000);
-    subDate.setHours(0, 0, 0, 0);
+    const subDate = new Date(ts * 1000)
+    subDate.setHours(0, 0, 0, 0)
 
-    const timeDiff = (expectedDay.getTime() - subDate.getTime()) / (1000 * 60 * 60 * 24);
+    const timeDiff = (expectedDay.getTime() - subDate.getTime()) / (1000 * 60 * 60 * 24)
 
     if (timeDiff === 0) {
-      if (streak === 0) streak = 1;
+      if (streak === 0) streak = 1
     } else if (timeDiff === 1) {
-      streak++;
-      expectedDay = subDate;
+      streak++
+      expectedDay = subDate
     } else if (timeDiff > 1) {
-      break;
+      break
     }
   }
 
-  return streak;
+  return streak
 }
 
 export async function getLeetCodeUserStats(username: string): Promise<LeetCodeUserStats> {
@@ -177,6 +188,7 @@ export async function getLeetCodeUserStats(username: string): Promise<LeetCodeUs
   const stats = user.submitStatsGlobal?.acSubmissionNum
   const calendarString = user.userCalendar?.submissionCalendar
   const streak = calculateStreak(calendarString)
+  const contestRanking = payload.data?.userContestRanking
 
   return {
     username: user.username,
@@ -186,7 +198,9 @@ export async function getLeetCodeUserStats(username: string): Promise<LeetCodeUs
       medium: countByDifficulty(stats, "medium"),
       hard: countByDifficulty(stats, "hard"),
     },
-    globalRanking: user.profile?.ranking ?? null,
+    globalRanking: contestRanking?.globalRanking ?? user.profile?.ranking ?? null,
+    rating: contestRanking?.rating ? Math.round(contestRanking.rating) : null,
+    attendedContests: contestRanking?.attendedContestsCount ?? null,
     streak,
   }
 }

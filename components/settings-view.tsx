@@ -1,15 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, Code2, ExternalLink, Globe2, Save, UserRound } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Check, Code2, ExternalLink, Globe2, Save } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const basePlatforms = [
@@ -22,13 +19,15 @@ function SettingsCard({ children, className = "" }: { children: React.ReactNode;
 }
 
 export function SettingsView() {
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [socraticMode, setSocraticMode] = useState(true)
   const [saved, setSaved] = useState(false)
+
+  // Profile fields state
+  const [displayName, setDisplayName] = useState("Umesh Nanda")
+  const [email, setEmail] = useState("umesh@codesync.dev")
 
   const [handles, setHandles] = useState({
     LeetCode: "Umeshh_Nanda",
-    Codeforces: "alex_cp",
+    Codeforces: "tourist",
   })
   
   const [connected, setConnected] = useState<Record<string, boolean>>({ 
@@ -36,15 +35,19 @@ export function SettingsView() {
     Codeforces: true, 
   })
 
+  // Load persisted settings on mount
   useEffect(() => {
     const savedLc = localStorage.getItem("leetcode_username")
-    if (savedLc) {
-      setHandles(prev => ({ ...prev, LeetCode: savedLc }))
-    }
+    if (savedLc) setHandles(prev => ({ ...prev, LeetCode: savedLc }))
+
     const savedCf = localStorage.getItem("codeforces_handle")
-    if (savedCf) {
-      setHandles(prev => ({ ...prev, Codeforces: savedCf }))
-    }
+    if (savedCf) setHandles(prev => ({ ...prev, Codeforces: savedCf }))
+
+    const savedName = localStorage.getItem("codesync_display_name")
+    if (savedName) setDisplayName(savedName)
+
+    const savedEmail = localStorage.getItem("codesync_email")
+    if (savedEmail) setEmail(savedEmail)
   }, [])
 
   const handleConnect = (name: string) => {
@@ -62,6 +65,13 @@ export function SettingsView() {
     setTimeout(() => setSaved(false), 2000)
   }
 
+  const handleSaveProfile = () => {
+    localStorage.setItem("codesync_display_name", displayName.trim())
+    localStorage.setItem("codesync_email", email.trim())
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1800)
+  }
+
   return <>
     <header className="border-b border-border/60 px-6 py-6 lg:px-10">
       <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Workspace / settings</p>
@@ -70,16 +80,33 @@ export function SettingsView() {
     </header>
     <main className="mx-auto max-w-[1100px] p-6 lg:p-10">
       <Tabs defaultValue="integrations" className="flex flex-col gap-6">
-        <TabsList className="grid h-auto w-full max-w-xl grid-cols-3 border border-border/70 bg-card/60 p-1">
-          <TabsTrigger value="profile">Profile</TabsTrigger><TabsTrigger value="integrations">Integrations</TabsTrigger><TabsTrigger value="preferences">Preferences</TabsTrigger>
+        <TabsList className="grid h-auto w-full max-w-xl grid-cols-2 border border-border/70 bg-card/60 p-1">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
+
         <TabsContent value="profile" className="mt-0">
-          <SettingsCard><CardHeader><CardTitle>Profile</CardTitle><CardDescription>Update the identity shown across your CodeSync workspace.</CardDescription></CardHeader><CardContent className="flex flex-col gap-6">
-            <div className="flex items-center gap-4"><Avatar className="size-16 border border-border"><AvatarImage src="/avatar.png" alt="Umesh Nanda" /><AvatarFallback>UN</AvatarFallback></Avatar><div className="flex flex-col gap-2"><Button variant="outline" size="sm">Upload avatar</Button><p className="text-xs text-muted-foreground">PNG or JPG, up to 2MB.</p></div></div>
-            <div className="grid gap-5 sm:grid-cols-2"><div className="flex flex-col gap-2"><Label htmlFor="display-name">Display name</Label><Input id="display-name" defaultValue="Umesh Nanda" /></div><div className="flex flex-col gap-2"><Label htmlFor="email">Email address</Label><Input id="email" type="email" defaultValue="umesh@codesync.dev" /></div></div>
-            <Button className="w-fit gap-2" onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 1800) }}>{saved ? <Check data-icon="inline-start" /> : <Save data-icon="inline-start" />}{saved ? "Saved" : "Save profile"}</Button>
-          </CardContent></SettingsCard>
+          <SettingsCard>
+            <CardHeader><CardTitle>Profile</CardTitle><CardDescription>Update the identity shown across your CodeSync workspace.</CardDescription></CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="display-name">Display name</Label>
+                  <Input id="display-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+              </div>
+              <Button className="w-fit gap-2" onClick={handleSaveProfile}>
+                {saved ? <Check data-icon="inline-start" /> : <Save data-icon="inline-start" />}
+                {saved ? "Saved" : "Save profile"}
+              </Button>
+            </CardContent>
+          </SettingsCard>
         </TabsContent>
+
         <TabsContent value="integrations" className="mt-0 flex flex-col gap-4">
           <div><h2 className="text-lg font-medium">Connected platforms</h2><p className="mt-1 text-sm text-muted-foreground">Link your competitive programming accounts to keep progress in sync.</p></div>
           {saved && <p className="text-xs font-mono text-emerald-400">Successfully updated and saved configuration!</p>}
@@ -93,7 +120,6 @@ export function SettingsView() {
           
           <p className="flex items-center gap-2 text-xs text-muted-foreground"><ExternalLink className="size-3" />We only use your public profile data to calculate progress.</p>
         </TabsContent>
-        <TabsContent value="preferences" className="mt-0"><SettingsCard><CardHeader><CardTitle>Preferences</CardTitle><CardDescription>Shape your daily preparation rhythm and coaching style.</CardDescription></CardHeader><CardContent className="flex flex-col gap-6"><div className="grid gap-5 sm:grid-cols-2"><div className="flex flex-col gap-2"><Label>Default prep sheet</Label><Select defaultValue="blind"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="blind">Blind 75</SelectItem><SelectItem value="neetcode">NeetCode 150</SelectItem></SelectContent></Select></div><div className="flex flex-col gap-2"><Label htmlFor="daily-goal">Daily goal</Label><Input id="daily-goal" type="number" min="1" max="50" defaultValue="3" /></div></div><div className="divide-y divide-border/60 rounded-xl border border-border/60"><div className="flex items-center justify-between gap-4 p-4"><div><p className="text-sm font-medium">Email Notifications</p><p className="mt-1 text-xs text-muted-foreground">Receive your daily progress recap.</p></div><Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} aria-label="Email Notifications" /></div><div className="flex items-center justify-between gap-4 p-4"><div><p className="text-sm font-medium">AI Socratic Mode</p><p className="mt-1 text-xs text-muted-foreground">Hints only, never full solutions or code.</p></div><Switch checked={socraticMode} onCheckedChange={setSocraticMode} aria-label="AI Socratic Mode" /></div></div><Button className="w-fit gap-2" onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 1800) }}>{saved ? <Check data-icon="inline-start" /> : <Save data-icon="inline-start" />}{saved ? "Saved" : "Save preferences"}</Button></CardContent></SettingsCard></TabsContent>
       </Tabs>
     </main>
   </>

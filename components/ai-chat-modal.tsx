@@ -1,0 +1,18 @@
+"use client"
+
+import { useState } from "react"
+import { Bot, RotateCcw, Send, X } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
+type Message = { role: "user" | "assistant"; text: string }
+
+const starters = ["Give me a hint for LRU Cache", "Explain Dynamic Programming vs Memoization", "Review my Two-Sum Time Complexity"]
+
+export function AiChatModal({ open, onClose, messages, setMessages }: { open: boolean; onClose: () => void; messages: Message[]; setMessages: React.Dispatch<React.SetStateAction<Message[]>> }) {
+  const [draft, setDraft] = useState("")
+  if (!open) return null
+  const send = (text = draft) => { if (!text.trim()) return; setMessages((current) => [...current, { role: "user", text }, { role: "assistant", text: "Let’s reason it out together. Start by identifying the invariant and the simplest brute-force approach, then we’ll improve it step by step." }]); setDraft("") }
+  return <div className="fixed inset-0 z-50 flex items-end justify-end bg-background/60 p-4 backdrop-blur-sm sm:items-center sm:p-8" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section role="dialog" aria-modal="true" aria-labelledby="ai-chat-title" className="flex h-[min(700px,calc(100vh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-primary/10"><header className="flex items-center justify-between border-b border-border/70 px-5 py-4"><div className="flex items-center gap-3"><div className="relative flex size-9 items-center justify-center rounded-xl bg-primary/15 text-primary"><Bot /><span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-chart-2 ring-2 ring-card" /></div><div><h2 id="ai-chat-title" className="text-sm font-semibold">CodeSync AI Assistant</h2><p className="text-xs text-muted-foreground">Online · Powered by Gemini</p></div></div><div className="flex items-center gap-2"><Badge variant="secondary" className="hidden text-[10px] sm:inline-flex">Socratic Mode (Hints Only)</Badge><Button variant="ghost" size="icon" aria-label="Close AI chat" onClick={onClose}><X /></Button></div></header><div className="flex-1 overflow-y-auto p-5"><div className="flex flex-col gap-4">{messages.length === 1 && messages[0].role === "assistant" && <div className="flex flex-wrap gap-2">{starters.map((starter) => <Button key={starter} variant="outline" size="sm" className="h-auto whitespace-normal text-left text-xs" onClick={() => send(starter)}>{starter}</Button>)}</div>}{messages.map((message, index) => <div key={`${message.role}-${index}`} className={message.role === "user" ? "ml-8 rounded-2xl rounded-br-sm bg-muted px-4 py-3 text-sm" : "mr-4 rounded-2xl rounded-bl-sm border border-primary/20 bg-background px-4 py-3 text-sm leading-6"}>{message.text}</div>)}</div></div><footer className="border-t border-border/70 p-4"><div className="flex gap-2"><Input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.nativeEvent.isComposing && event.keyCode !== 229) send() }} placeholder="Ask for a hint, complexity check, or concept explanation..." aria-label="Ask CodeSync AI" /><Button size="icon" aria-label="Send message" onClick={() => send()}><Send /></Button></div><Button variant="ghost" size="sm" className="mt-2 px-0 text-xs text-muted-foreground" onClick={() => setMessages([{ role: "assistant", text: "Chat reset. What are you working on?" }])}><RotateCcw /> Clear chat</Button></footer></section></div>
+}

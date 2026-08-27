@@ -22,7 +22,7 @@ function CardHeading({ eyebrow, title, action }: { eyebrow: string; title: strin
 function DashboardPage({ onOpenAi }: { onOpenAi: () => void }) { 
   const [stats, setStats] = useState<any>(null);
   const [cfStats, setCfStats] = useState<any>(null);
-  const [displayName, setDisplayName] = useState<string>("NA");
+  const [displayName, setDisplayName] = useState<string>("Guest");
   const [weeklyTarget, setWeeklyTarget] = useState(15);
   const [monthlyTarget, setMonthlyTarget] = useState(50);
   const [monthStartTotal, setMonthStartTotal] = useState<number>(0);

@@ -39,7 +39,7 @@ function DashboardPage({ onOpenAi }: { onOpenAi: () => void }) {
     if (savedWT) setWeeklyTarget(Number(savedWT));
     if (savedMT) setMonthlyTarget(Number(savedMT));
 
-    const savedLc = localStorage.getItem("leetcode_username") || "Umeshh_Nanda";
+    const savedLc = localStorage.getItem("leetcode_username") || "tourist";
     fetch(`/api/leetcode?username=${savedLc}`)
       .then((res) => res.json())
       .then((data) => { if (data.ok) setStats(data.data); })

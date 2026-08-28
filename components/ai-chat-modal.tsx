@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useEffect } from "react"
 import { RotateCcw, Send, X, Sparkles, Paperclip, FileText, Loader2, Plus, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,14 @@ export function AiChatModal({
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onAddItems?: (items: ChecklistItem[]) => void
 }) {
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages, open])
+
   const [draft, setDraft] = useState("")
   const [loading, setLoading] = useState(false)
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
@@ -129,6 +138,8 @@ export function AiChatModal({
               </div>
             ))}
             {loading && <div className="text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin inline mr-2" /> Generating...</div>}
+
+            <div ref={messagesEndRef} />
           </div>
         </div>
 

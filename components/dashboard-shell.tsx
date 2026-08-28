@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
-import { Activity, BarChart3, Bot, Check, CheckSquare2, ChevronDown, ChevronLeft, ChevronRight, Code2, ExternalLink, Filter, MessageSquare, Play, Search, Send, Settings, Sparkles, Trash2, X } from "lucide-react"
+import { Activity, BarChart3, Bot, Check, CheckSquare2, ChevronDown, ChevronLeft, ChevronRight, Code2, ExternalLink, Filter, MessageSquare, Play, Search, Send, Settings, ShieldCheck, Sparkles, Trash2, X , Lock} from "lucide-react"
 import { Area, AreaChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -10,9 +10,12 @@ import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SettingsView } from "@/components/settings-view"
 import { AiChatModal } from "@/components/ai-chat-modal"
+import { Coffee, Terminal } from "lucide-react"
+import { TermsView } from "./TermsView"
+import { PrivacyView } from "./PrivacyView"
 
-type View = "Dashboard" | "Master Checklist" | "Analytics" | "Settings"
-const navItems = [{ label: "Dashboard", icon: BarChart3 }, { label: "Master Checklist", icon: CheckSquare2 }, { label: "Analytics", icon: Activity }, { label: "Settings", icon: Settings }]
+type View = "Dashboard" | "Master Checklist" | "Analytics" | "Settings" | "About" | "Terms" | "Privacy"
+const navItems = [{ label: "Dashboard", icon: BarChart3 }, { label: "Master Checklist", icon: CheckSquare2 }, { label: "Analytics", icon: Activity }, { label: "Settings", icon: Settings }, { label: "About", icon: Terminal }, {label: "Terms", icon: ShieldCheck}, {label: "Privacy", icon: Lock}]
 
 const difficultyColors = { Easy: "#51d88a", Medium: "#f5a94f", Hard: "#f16f6f" }
 
@@ -536,6 +539,9 @@ export function DashboardShell({ children }: { children: (view: React.ReactNode)
       case "Master Checklist": return <ChecklistView problems={masterProblems} onDelete={handleDeleteProblem} />;
       case "Analytics": return <AnalyticsPage problems={masterProblems} />;
       case "Settings": return <SettingsView />;
+      case "About": return <AboutView />;
+      case "Terms": return <TermsView />;
+      case "Privacy": return <PrivacyView/>;
     }
   };
 
@@ -579,6 +585,74 @@ export function DashboardShell({ children }: { children: (view: React.ReactNode)
       </div>
     </div>
   ) 
+}
+
+const GithubIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+    <path d="M9 18c-4.51 2-5-2-7-2" />
+  </svg>
+);
+
+export function AboutView() {
+  return (
+    <>
+      <header className="border-b border-border/60 px-6 py-6 lg:px-10">
+        <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">System / Mission</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">About CodeSync</h1>
+      </header>
+      
+      <main className="mx-auto grid max-w-[1500px] gap-5 p-6 lg:grid-cols-2 lg:p-10">
+        <section className="rounded-2xl border border-border/70 bg-card/60 p-6 backdrop-blur-md lg:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Terminal className="size-5" />
+            </div>
+            <h2 className="text-xl font-semibold">The Core Mission</h2>
+          </div>
+          <p className="text-muted-foreground leading-relaxed">
+            CodeSync is the ultimate operating system for competitive programming. Built in public under the 
+            <strong> Kernel Berserker</strong> devlog, this platform syncs real-time analytics from LeetCode 
+            and Codeforces, passing your data through custom AI pipelines to generate dynamic, edge-of-forgetting 
+            problem roadmaps. 
+          </p>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            No fluff. No tutorials. Just raw data and algorithmic grinding.
+          </p>
+        </section>
+
+        <section className="rounded-2xl border border-border/70 bg-card/60 p-6 backdrop-blur-md lg:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-chart-2/10 text-chart-2">
+              <Sparkles className="size-5" />
+            </div>
+            <h2 className="text-xl font-semibold">Support the Build</h2>
+          </div>
+          <p className="text-muted-foreground leading-relaxed mb-6">
+            This project is free and open-access, but AI inference (Groq) and server hosting cost money. 
+            If CodeSync keeps your streak alive, consider fueling the API costs.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button className="w-full sm:w-auto flex items-center gap-2">
+              <Coffee className="size-4" /> Buy me a coffee
+            </Button>
+            <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2">
+              <GithubIcon className="size-4" /> Star on GitHub
+            </Button>
+          </div>
+        </section>
+      </main>
+    </>
+  )
 }
 
 export function DashboardContent() { return <DashboardShell>{(content) => content}</DashboardShell> }

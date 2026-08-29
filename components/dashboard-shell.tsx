@@ -10,7 +10,7 @@ import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SettingsView } from "@/components/settings-view"
 import { AiChatModal } from "@/components/ai-chat-modal"
-import { Coffee, Terminal } from "lucide-react"
+import { Heart, Terminal } from "lucide-react"
 import { TermsView } from "./TermsView"
 import { PrivacyView } from "./PrivacyView"
 
@@ -643,7 +643,13 @@ export function AboutView() {
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button className="w-full sm:w-auto flex items-center gap-2">
-              <Coffee className="size-4" /> Buy me a coffee
+            <a 
+              href="https://github.com/sponsors/YOUR_GITHUB_USERNAME" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Heart className="size-4" /> Sponsor on GitHub
+              </a>
             </Button>
             <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2">
               <GithubIcon className="size-4" /> Star on GitHub
